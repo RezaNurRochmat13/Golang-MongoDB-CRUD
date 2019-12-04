@@ -50,3 +50,24 @@ func (uc *userUseCaseImpl) CreateNewUser(payload *model.CreateUser) (*model.Crea
 
 	return payload, nil
 }
+
+func (uc *userUseCaseImpl) UpdateUser(id string, payload *model.UpdateUser) error {
+
+	// Find user first
+	_, errorHandlerRepos := uc.userRepository.FindById(id)
+
+	if errorHandlerRepos != nil {
+		log.Println("User not found", errorHandlerRepos.Error())
+		return errorHandlerRepos
+	}
+
+	// Update users
+	errorHandlerRepo := uc.userRepository.Update(id, payload)
+
+	if errorHandlerRepo != nil {
+		log.Println("Error when get repo : ", errorHandlerRepo.Error())
+		return errorHandlerRepo
+	}
+
+	return nil
+}

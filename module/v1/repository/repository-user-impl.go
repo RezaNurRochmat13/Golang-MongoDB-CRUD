@@ -81,3 +81,28 @@ func (ur *userRepositoryImpl) Save(payload *model.CreateUser) error {
 
 	return nil
 }
+
+func (ur *userRepositoryImpl) Update(id string, payload *model.UpdateUser) error {
+	collection := ur.Connection.Database("authentication")
+	objectID, _ := primitive.ObjectIDFromHex(id)
+
+	filter := bson.M{
+		"_id": objectID,
+	}
+
+	updateField := bson.M{
+		"$set": bson.M{
+			"name":    payload.Name,
+			"age":     payload.Age,
+			"address": payload.Address,
+		}}
+
+	_, errorHandlerUpdateUser := collection.Collection("users").UpdateOne(cntx, filter, updateField)
+
+	if errorHandlerUpdateUser != nil {
+		log.Println("Error when update : ", errorHandlerUpdateUser.Error())
+		return errorHandlerUpdateUser
+	}
+
+	return nil
+}

@@ -22,6 +22,7 @@ func NewUserHandler(e *echo.Echo, userUseCase usecase.UseCase) {
 	groupingPath.GET("/users", injectionHandler.GetAllUsers)
 	groupingPath.GET("/user/:id", injectionHandler.GetDetailUsers)
 	groupingPath.POST("/user", injectionHandler.CreateNewUser)
+	groupingPath.PUT("/user/:id", injectionHandler.UpdateUser)
 }
 
 func (uh *UserHandler) GetAllUsers(ctx echo.Context) error {
@@ -84,4 +85,27 @@ func (uh *UserHandler) CreateNewUser(ctx echo.Context) error {
 		"message":      "User created successfully",
 		"created_user": saveUser,
 	})
+}
+
+func (uh *UserHandler) UpdateUser(ctx echo.Context) error {
+	id := ctx.Param("id")
+	userUpdate := new(model.UpdateUser)
+
+	errorHandlerBindJSON := ctx.Bind(userUpdate)
+
+	if errorHandlerBindJSON != nil {
+		log.Println("Error when bind json : ", errorHandlerBindJSON)
+	}
+
+	errorHandlerUpdate := uh.UserUseCase.UpdateUser(id, userUpdate)
+
+	if errorHandlerUpdate != nil {
+		log.Println("Error when get usecase : ", errorHandlerUpdate.Error())
+
+		return ctx.JSON(http.StatusBadRequest, echo.Map{
+			"message": "Update gagal",
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, echo.Map{"message": "User updated sucessfully"})
 }
