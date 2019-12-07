@@ -1,10 +1,10 @@
 package presenter
 
 import (
-	"log"
 	"net/http"
 	"svc-users-go/module/v1/model"
 	"svc-users-go/module/v1/usecase"
+	"svc-users-go/utils"
 
 	"github.com/labstack/echo"
 )
@@ -28,8 +28,7 @@ func NewUserHandler(e *echo.Echo, userUseCase usecase.UseCase) {
 func (uh *UserHandler) GetAllUsers(ctx echo.Context) error {
 	findAllUserUseCase, errorHandlerUseCase := uh.UserUseCase.FindAllUsers()
 
-	if errorHandlerUseCase != nil {
-		log.Println("Error when handle usecase : ", errorHandlerUseCase.Error())
+	if !utils.GlobalErrorDatabaseException(errorHandlerUseCase) {
 
 		return ctx.JSON(http.StatusBadRequest, echo.Map{
 			"error":   errorHandlerUseCase.Error(),
@@ -49,8 +48,7 @@ func (uh *UserHandler) GetDetailUsers(ctx echo.Context) error {
 
 	findUserById, errorHandlerUseCase := uh.UserUseCase.FindUserById(id)
 
-	if errorHandlerUseCase != nil {
-		log.Println("Error when get usecase : ", errorHandlerUseCase.Error())
+	if !utils.GlobalErrorDatabaseException(errorHandlerUseCase) {
 
 		return ctx.JSON(http.StatusBadRequest, echo.Map{
 			"message": "User not found",
@@ -67,14 +65,13 @@ func (uh *UserHandler) CreateNewUser(ctx echo.Context) error {
 
 	errorHandlerBindJSON := ctx.Bind(userPayload)
 
-	if errorHandlerBindJSON != nil {
-		log.Println("Error when bind json : ", errorHandlerBindJSON)
+	if !utils.GlobalErrorDatabaseException(errorHandlerBindJSON) {
+		return errorHandlerBindJSON
 	}
 
 	saveUser, errorHandlerUseCase := uh.UserUseCase.CreateNewUser(userPayload)
 
-	if errorHandlerUseCase != nil {
-		log.Println("Error when get usecase : ", errorHandlerUseCase.Error())
+	if !utils.GlobalErrorDatabaseException(errorHandlerUseCase) {
 
 		return ctx.JSON(http.StatusBadRequest, echo.Map{
 			"message": "User not found",
@@ -93,15 +90,13 @@ func (uh *UserHandler) UpdateUser(ctx echo.Context) error {
 
 	errorHandlerBindJSON := ctx.Bind(userUpdate)
 
-	if errorHandlerBindJSON != nil {
-		log.Println("Error when bind json : ", errorHandlerBindJSON)
+	if !utils.GlobalErrorDatabaseException(errorHandlerBindJSON) {
+		return errorHandlerBindJSON
 	}
 
 	errorHandlerUpdate := uh.UserUseCase.UpdateUser(id, userUpdate)
 
-	if errorHandlerUpdate != nil {
-		log.Println("Error when get usecase : ", errorHandlerUpdate.Error())
-
+	if !utils.GlobalErrorDatabaseException(errorHandlerUpdate) {
 		return ctx.JSON(http.StatusBadRequest, echo.Map{
 			"message": "Update gagal",
 		})

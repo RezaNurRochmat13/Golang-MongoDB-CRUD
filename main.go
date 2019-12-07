@@ -32,5 +32,7 @@ func main() {
 	userUseCase := UserUseCasePackage.NewUserUseCase(userRepo)
 	UserHandlerPackage.NewUserHandler(echoRouter, userUseCase)
 
+	//Configuration of logger
+	echoRouter.Use(middleware.Logger())
 	echoRouter.Logger.Fatal(echoRouter.Start(":8081"))
 }

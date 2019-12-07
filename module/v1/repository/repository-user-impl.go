@@ -2,8 +2,8 @@ package repository
 
 import (
 	"context"
-	"log"
 	"svc-users-go/module/v1/model"
+	"svc-users-go/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -30,16 +30,14 @@ func (ur *userRepositoryImpl) FindAll() ([]model.Users, error) {
 
 	csr, errorCsr := collection.Collection("users").Find(cntx, bson.D{{}}, nil)
 
-	if errorCsr != nil {
-		log.Println("Error query mongo : ", errorCsr.Error())
+	if !utils.GlobalErrorDatabaseException(errorCsr) {
 		return nil, errorCsr
 	}
 
 	for csr.Next(cntx) {
 		errorHandlerDecodeData := csr.Decode(&user)
 
-		if errorHandlerDecodeData != nil {
-			log.Println("Error decode data : ", errorHandlerDecodeData.Error())
+		if !utils.GlobalErrorDatabaseException(errorHandlerDecodeData) {
 			return nil, errorHandlerDecodeData
 		}
 
@@ -60,8 +58,7 @@ func (ur *userRepositoryImpl) FindById(id string) (model.Users, error) {
 
 	errorGetOneUser := collection.Collection("users").FindOne(cntx, filter).Decode(&user)
 
-	if errorGetOneUser != nil {
-		log.Println("Error when get one : ", errorGetOneUser.Error())
+	if !utils.GlobalErrorDatabaseException(errorGetOneUser) {
 		return model.Users{}, errorGetOneUser
 	}
 
@@ -74,8 +71,7 @@ func (ur *userRepositoryImpl) Save(payload *model.CreateUser) error {
 
 	_, errorHandlerSaveUser := collection.Collection("users").InsertOne(cntx, payload)
 
-	if errorHandlerSaveUser != nil {
-		log.Println("Error when saving mongo : ", errorHandlerSaveUser.Error())
+	if !utils.GlobalErrorDatabaseException(errorHandlerSaveUser) {
 		return errorHandlerSaveUser
 	}
 
@@ -99,8 +95,7 @@ func (ur *userRepositoryImpl) Update(id string, payload *model.UpdateUser) error
 
 	_, errorHandlerUpdateUser := collection.Collection("users").UpdateOne(cntx, filter, updateField)
 
-	if errorHandlerUpdateUser != nil {
-		log.Println("Error when update : ", errorHandlerUpdateUser.Error())
+	if !utils.GlobalErrorDatabaseException(errorHandlerUpdateUser) {
 		return errorHandlerUpdateUser
 	}
 

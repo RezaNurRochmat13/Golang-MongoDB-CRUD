@@ -1,10 +1,12 @@
 package usecase
 
-import "svc-users-go/module/v1/repository"
+import (
+	"svc-users-go/module/v1/repository"
 
-import "svc-users-go/module/v1/model"
+	"svc-users-go/module/v1/model"
 
-import "log"
+	"svc-users-go/utils"
+)
 
 type userUseCaseImpl struct {
 	userRepository repository.Repository
@@ -19,8 +21,7 @@ func NewUserUseCase(UserRepos repository.Repository) UseCase {
 func (uc *userUseCaseImpl) FindAllUsers() ([]model.Users, error) {
 	findAllUser, errorHandlerRepo := uc.userRepository.FindAll()
 
-	if errorHandlerRepo != nil {
-		log.Println("Error when get repo : ", errorHandlerRepo.Error())
+	if !utils.GlobalErrorDatabaseException(errorHandlerRepo) {
 		return nil, errorHandlerRepo
 	}
 
@@ -30,8 +31,7 @@ func (uc *userUseCaseImpl) FindAllUsers() ([]model.Users, error) {
 func (uc *userUseCaseImpl) FindUserById(id string) (model.Users, error) {
 	findUserById, errorHandlerRepo := uc.userRepository.FindById(id)
 
-	if errorHandlerRepo != nil {
-		log.Println("Error when get repo : ", errorHandlerRepo.Error())
+	if !utils.GlobalErrorDatabaseException(errorHandlerRepo) {
 		return model.Users{}, errorHandlerRepo
 	}
 
@@ -43,8 +43,7 @@ func (uc *userUseCaseImpl) CreateNewUser(payload *model.CreateUser) (*model.Crea
 
 	errorHandlerRepo := uc.userRepository.Save(payload)
 
-	if errorHandlerRepo != nil {
-		log.Println("Error when get repo : ", errorHandlerRepo.Error())
+	if !utils.GlobalErrorDatabaseException(errorHandlerRepo) {
 		return nil, errorHandlerRepo
 	}
 
@@ -56,16 +55,14 @@ func (uc *userUseCaseImpl) UpdateUser(id string, payload *model.UpdateUser) erro
 	// Find user first
 	_, errorHandlerRepos := uc.userRepository.FindById(id)
 
-	if errorHandlerRepos != nil {
-		log.Println("User not found", errorHandlerRepos.Error())
+	if !utils.GlobalErrorDatabaseException(errorHandlerRepos) {
 		return errorHandlerRepos
 	}
 
 	// Update users
 	errorHandlerRepo := uc.userRepository.Update(id, payload)
 
-	if errorHandlerRepo != nil {
-		log.Println("Error when get repo : ", errorHandlerRepo.Error())
+	if !utils.GlobalErrorDatabaseException(errorHandlerRepo) {
 		return errorHandlerRepo
 	}
 
