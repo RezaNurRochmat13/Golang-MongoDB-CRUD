@@ -101,3 +101,20 @@ func (ur *userRepositoryImpl) Update(id string, payload *model.UpdateUser) error
 
 	return nil
 }
+
+func (ur *userRepositoryImpl) Delete(id string) error {
+	var (
+		database    = ur.Connection.Database("authentication")
+		objectID, _ = primitive.ObjectIDFromHex(id)
+	)
+
+	filter := bson.M{"_id": objectID}
+
+	_, errorHandlerDelete := database.Collection("users").DeleteOne(cntx, filter)
+
+	if !utils.GlobalErrorDatabaseException(errorHandlerDelete) {
+		return errorHandlerDelete
+	}
+
+	return nil
+}

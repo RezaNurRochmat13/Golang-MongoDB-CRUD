@@ -68,3 +68,20 @@ func (uc *userUseCaseImpl) UpdateUser(id string, payload *model.UpdateUser) erro
 
 	return nil
 }
+
+func (uc *userUseCaseImpl) DeleteUser(id string) error {
+	// Find user first
+	_, errorHandlerRepos := uc.userRepository.FindById(id)
+
+	if !utils.GlobalErrorDatabaseException(errorHandlerRepos) {
+		return errorHandlerRepos
+	}
+
+	errorHandlerRepo := uc.userRepository.Delete(id)
+
+	if !utils.GlobalErrorDatabaseException(errorHandlerRepo) {
+		return errorHandlerRepo
+	}
+
+	return nil
+}
