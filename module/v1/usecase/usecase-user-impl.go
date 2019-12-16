@@ -18,8 +18,27 @@ func NewUserUseCase(UserRepos repository.Repository) UseCase {
 	}
 }
 
-func (uc *userUseCaseImpl) FindAllUsers() ([]model.Users, error) {
-	findAllUser, errorHandlerRepo := uc.userRepository.FindAll()
+func (uc *userUseCaseImpl) CountAllUsers() (int64, error) {
+	countAllUserData, errorHandlerRepo := uc.userRepository.Count()
+
+	if !utils.GlobalErrorException(errorHandlerRepo) {
+		return 0, errorHandlerRepo
+	}
+
+	return countAllUserData, nil
+}
+
+func (uc *userUseCaseImpl) FindAllUsers(limit int64, page int64) ([]model.Users, error) {
+	var pages int64
+
+	// Set paging per page
+	if page == 1 {
+		pages = page
+	} else {
+		pages = page * 10
+	}
+
+	findAllUser, errorHandlerRepo := uc.userRepository.FindAll(limit, pages)
 
 	if !utils.GlobalErrorDatabaseException(errorHandlerRepo) {
 		return nil, errorHandlerRepo

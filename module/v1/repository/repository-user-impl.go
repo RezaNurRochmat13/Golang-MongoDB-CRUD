@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 var cntx context.Context
@@ -20,15 +21,33 @@ func NewUserRepository(Connection *mongo.Client) Repository {
 	return &userRepositoryImpl{Connection: Connection}
 }
 
-func (ur *userRepositoryImpl) FindAll() ([]model.Users, error) {
+func (ur *userRepositoryImpl) Count() (int64, error) {
+	collection := ur.Connection.Database("authentication")
+
+	countRecord, errorHandlerCount := collection.Collection("users").CountDocuments(cntx, bson.M{}, nil)
+
+	if !utils.GlobalErrorDatabaseException(errorHandlerCount) {
+		return 0, errorHandlerCount
+	}
+
+	return countRecord, nil
+}
+
+func (ur *userRepositoryImpl) FindAll(limit int64, offset int64) ([]model.Users, error) {
 	collection := ur.Connection.Database("authentication")
 
 	var (
-		user  model.Users
-		users []model.Users
+		user     model.Users
+		users    []model.Users
+		csr      *mongo.Cursor
+		errorCsr error
 	)
 
-	csr, errorCsr := collection.Collection("users").Find(cntx, bson.D{{}}, nil)
+	filterOptions := options.Find()
+	filterOptions.SetLimit(limit)
+	filterOptions.SetSkip(offset)
+
+	csr, errorCsr = collection.Collection("users").Find(cntx, bson.M{}, filterOptions)
 
 	if !utils.GlobalErrorDatabaseException(errorCsr) {
 		return nil, errorCsr

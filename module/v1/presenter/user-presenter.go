@@ -2,6 +2,7 @@ package presenter
 
 import (
 	"net/http"
+	"strconv"
 	"svc-users-go/module/v1/model"
 	"svc-users-go/module/v1/usecase"
 	"svc-users-go/utils"
@@ -27,20 +28,38 @@ func NewUserHandler(e *echo.Echo, userUseCase usecase.UseCase) {
 }
 
 func (uh *UserHandler) GetAllUsers(ctx echo.Context) error {
-	findAllUserUseCase, errorHandlerUseCase := uh.UserUseCase.FindAllUsers()
+	var (
+		limitParam      = ctx.QueryParam("limit")
+		pagesParam      = ctx.QueryParam("page")
+		convertLimit, _ = strconv.ParseInt(limitParam, 10, 64)
+		convertPage, _  = strconv.ParseInt(pagesParam, 10, 64)
+	)
+
+	// Limiting and paging data
+	findAllUserUseCase, errorHandlerUseCase := uh.UserUseCase.FindAllUsers(convertLimit, convertPage)
 
 	if !utils.GlobalErrorDatabaseException(errorHandlerUseCase) {
-
 		return ctx.JSON(http.StatusBadRequest, echo.Map{
 			"error":   errorHandlerUseCase.Error(),
 			"message": "Error when get usecase",
 		})
 	}
 
+	// Count all data
+	countAllDataUser, errorHandlerUseCaseCount := uh.UserUseCase.CountAllUsers()
+	if !utils.GlobalErrorException(errorHandlerUseCaseCount) {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{
+			"error":   errorHandlerUseCaseCount.Error(),
+			"message": "Error when get usecase",
+		})
+	}
+
 	return ctx.JSON(http.StatusOK, echo.Map{
-		"total": len(findAllUserUseCase),
 		"count": len(findAllUserUseCase),
 		"data":  findAllUserUseCase,
+		"total": countAllDataUser,
+		"limit": convertLimit,
+		"page":  convertPage,
 	})
 }
 
