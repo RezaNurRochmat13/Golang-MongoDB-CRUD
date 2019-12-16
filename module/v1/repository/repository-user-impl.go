@@ -14,17 +14,15 @@ import (
 var cntx context.Context
 
 type userRepositoryImpl struct {
-	Connection *mongo.Client
+	Connection *mongo.Database
 }
 
-func NewUserRepository(Connection *mongo.Client) Repository {
+func NewUserRepository(Connection *mongo.Database) Repository {
 	return &userRepositoryImpl{Connection: Connection}
 }
 
 func (ur *userRepositoryImpl) Count() (int64, error) {
-	collection := ur.Connection.Database("authentication")
-
-	countRecord, errorHandlerCount := collection.Collection("users").CountDocuments(cntx, bson.M{}, nil)
+	countRecord, errorHandlerCount := ur.Connection.Collection("users").CountDocuments(cntx, bson.M{}, nil)
 
 	if !utils.GlobalErrorDatabaseException(errorHandlerCount) {
 		return 0, errorHandlerCount
@@ -34,20 +32,16 @@ func (ur *userRepositoryImpl) Count() (int64, error) {
 }
 
 func (ur *userRepositoryImpl) FindAll(limit int64, offset int64) ([]model.Users, error) {
-	collection := ur.Connection.Database("authentication")
-
 	var (
-		user     model.Users
-		users    []model.Users
-		csr      *mongo.Cursor
-		errorCsr error
+		user          model.Users
+		users         []model.Users
+		filterOptions = options.Find()
 	)
 
-	filterOptions := options.Find()
 	filterOptions.SetLimit(limit)
 	filterOptions.SetSkip(offset)
 
-	csr, errorCsr = collection.Collection("users").Find(cntx, bson.M{}, filterOptions)
+	csr, errorCsr := ur.Connection.Collection("users").Find(cntx, bson.M{}, filterOptions)
 
 	if !utils.GlobalErrorDatabaseException(errorCsr) {
 		return nil, errorCsr
@@ -67,15 +61,13 @@ func (ur *userRepositoryImpl) FindAll(limit int64, offset int64) ([]model.Users,
 }
 
 func (ur *userRepositoryImpl) FindById(id string) (model.Users, error) {
-	collection := ur.Connection.Database("authentication")
-	userId, _ := primitive.ObjectIDFromHex(id)
-
 	var (
-		user   model.Users
-		filter = bson.M{"_id": userId}
+		user      model.Users
+		userId, _ = primitive.ObjectIDFromHex(id)
+		filter    = bson.M{"_id": userId}
 	)
 
-	errorGetOneUser := collection.Collection("users").FindOne(cntx, filter).Decode(&user)
+	errorGetOneUser := ur.Connection.Collection("users").FindOne(cntx, filter).Decode(&user)
 
 	if !utils.GlobalErrorDatabaseException(errorGetOneUser) {
 		return model.Users{}, errorGetOneUser
@@ -86,9 +78,7 @@ func (ur *userRepositoryImpl) FindById(id string) (model.Users, error) {
 }
 
 func (ur *userRepositoryImpl) Save(payload *model.CreateUser) error {
-	collection := ur.Connection.Database("authentication")
-
-	_, errorHandlerSaveUser := collection.Collection("users").InsertOne(cntx, payload)
+	_, errorHandlerSaveUser := ur.Connection.Collection("users").InsertOne(cntx, payload)
 
 	if !utils.GlobalErrorDatabaseException(errorHandlerSaveUser) {
 		return errorHandlerSaveUser
@@ -98,7 +88,6 @@ func (ur *userRepositoryImpl) Save(payload *model.CreateUser) error {
 }
 
 func (ur *userRepositoryImpl) Update(id string, payload *model.UpdateUser) error {
-	collection := ur.Connection.Database("authentication")
 	objectID, _ := primitive.ObjectIDFromHex(id)
 
 	filter := bson.M{
@@ -112,7 +101,7 @@ func (ur *userRepositoryImpl) Update(id string, payload *model.UpdateUser) error
 			"address": payload.Address,
 		}}
 
-	_, errorHandlerUpdateUser := collection.Collection("users").UpdateOne(cntx, filter, updateField)
+	_, errorHandlerUpdateUser := ur.Connection.Collection("users").UpdateOne(cntx, filter, updateField)
 
 	if !utils.GlobalErrorDatabaseException(errorHandlerUpdateUser) {
 		return errorHandlerUpdateUser
@@ -122,14 +111,11 @@ func (ur *userRepositoryImpl) Update(id string, payload *model.UpdateUser) error
 }
 
 func (ur *userRepositoryImpl) Delete(id string) error {
-	var (
-		database    = ur.Connection.Database("authentication")
-		objectID, _ = primitive.ObjectIDFromHex(id)
-	)
+	objectID, _ := primitive.ObjectIDFromHex(id)
 
 	filter := bson.M{"_id": objectID}
 
-	_, errorHandlerDelete := database.Collection("users").DeleteOne(cntx, filter)
+	_, errorHandlerDelete := ur.Connection.Collection("users").DeleteOne(cntx, filter)
 
 	if !utils.GlobalErrorDatabaseException(errorHandlerDelete) {
 		return errorHandlerDelete
