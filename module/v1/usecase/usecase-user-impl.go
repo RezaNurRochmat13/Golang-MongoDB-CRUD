@@ -28,7 +28,7 @@ func (uc *userUseCaseImpl) CountAllUsers() (int64, error) {
 	return countAllUserData, nil
 }
 
-func (uc *userUseCaseImpl) FindAllUsers(limit int64, page int64) ([]model.Users, error) {
+func (uc *userUseCaseImpl) FindAllUsers(name string, limit int64, page int64) ([]model.Users, error) {
 	var pages int64
 
 	// Set paging per page
@@ -38,7 +38,7 @@ func (uc *userUseCaseImpl) FindAllUsers(limit int64, page int64) ([]model.Users,
 		pages = page * 10
 	}
 
-	findAllUser, errorHandlerRepo := uc.userRepository.FindAll(limit, pages)
+	findAllUser, errorHandlerRepo := uc.userRepository.FindAll(name, limit, pages)
 
 	if !utils.GlobalErrorDatabaseException(errorHandlerRepo) {
 		return nil, errorHandlerRepo

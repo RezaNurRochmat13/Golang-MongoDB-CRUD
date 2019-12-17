@@ -31,12 +31,13 @@ func (uh *UserHandler) GetAllUsers(ctx echo.Context) error {
 	var (
 		limitParam      = ctx.QueryParam("limit")
 		pagesParam      = ctx.QueryParam("page")
+		name            = ctx.QueryParam("name")
 		convertLimit, _ = strconv.ParseInt(limitParam, 10, 64)
 		convertPage, _  = strconv.ParseInt(pagesParam, 10, 64)
 	)
 
 	// Limiting and paging data
-	findAllUserUseCase, errorHandlerUseCase := uh.UserUseCase.FindAllUsers(convertLimit, convertPage)
+	findAllUserUseCase, errorHandlerUseCase := uh.UserUseCase.FindAllUsers(name, convertLimit, convertPage)
 
 	if !utils.GlobalErrorDatabaseException(errorHandlerUseCase) {
 		return ctx.JSON(http.StatusBadRequest, echo.Map{

@@ -31,20 +31,29 @@ func (ur *userRepositoryImpl) Count() (int64, error) {
 	return countRecord, nil
 }
 
-func (ur *userRepositoryImpl) FindAll(limit int64, offset int64) ([]model.Users, error) {
+func (ur *userRepositoryImpl) FindAll(name string, limit int64, offset int64) ([]model.Users, error) {
 	var (
 		user          model.Users
 		users         []model.Users
 		filterOptions = options.Find()
+		csr           *mongo.Cursor
+		errorCsr      error
 	)
 
 	filterOptions.SetLimit(limit)
 	filterOptions.SetSkip(offset)
 
-	csr, errorCsr := ur.Connection.Collection("users").Find(cntx, bson.M{}, filterOptions)
+	if name != "" {
+		csr, errorCsr = ur.Connection.Collection("users").Find(cntx, bson.M{"name": name}, filterOptions)
+		if !utils.GlobalErrorDatabaseException(errorCsr) {
+			return nil, errorCsr
+		}
+	} else {
+		csr, errorCsr = ur.Connection.Collection("users").Find(cntx, bson.M{}, filterOptions)
 
-	if !utils.GlobalErrorDatabaseException(errorCsr) {
-		return nil, errorCsr
+		if !utils.GlobalErrorDatabaseException(errorCsr) {
+			return nil, errorCsr
+		}
 	}
 
 	for csr.Next(cntx) {
