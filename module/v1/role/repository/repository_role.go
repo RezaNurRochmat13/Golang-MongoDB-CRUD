@@ -63,3 +63,13 @@ func (ru *roleRepositoryImpl) FindAll(limit int64,
 	return roles, nil
 
 }
+
+func (ru *roleRepositoryImpl) Save(payload *model.CreateRole) error {
+	_, errorHandlerSave := ru.Connection.Collection("role").InsertOne(cntx, payload)
+
+	if !utils.GlobalErrorDatabaseException(errorHandlerSave) {
+		return errorHandlerSave
+	}
+
+	return nil
+}

@@ -3,6 +3,7 @@ package presenter
 import (
 	"net/http"
 	"strconv"
+	"svc-users-go/module/v1/role/model"
 	"svc-users-go/module/v1/role/usecase"
 	"svc-users-go/utils"
 
@@ -20,6 +21,7 @@ func NewRoleHandler(e *echo.Echo, roleUseCase usecase.UseCase) {
 
 	groupingPath := e.Group("/api/v1")
 	groupingPath.GET("/roles", injectionHandler.GetAllRoles)
+	groupingPath.POST("/role", injectionHandler.CreateNewRoles)
 
 }
 
@@ -66,5 +68,28 @@ func (rp *RoleHandler) GetAllRoles(ctx echo.Context) error {
 		"total": countAllRoles,
 		"limit": convertLimit,
 		"page":  convertPage,
+	})
+}
+
+func (rp *RoleHandler) CreateNewRoles(ctx echo.Context) error {
+	rolePayload := new(model.CreateRole)
+
+	errorHandlerBindJSON := ctx.Bind(rolePayload)
+	if !utils.GlobalErrorException(errorHandlerBindJSON) {
+		return errorHandlerBindJSON
+	}
+
+	// Save role
+	errorHandlerSaveRole := rp.RoleUseCase.CreateNewRole(rolePayload)
+	if !utils.GlobalErrorException(errorHandlerSaveRole) {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{
+			"error":   errorHandlerSaveRole,
+			"message": "Error when get usecase",
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, echo.Map{
+		"message":      "Role created successfully",
+		"created_role": rolePayload,
 	})
 }

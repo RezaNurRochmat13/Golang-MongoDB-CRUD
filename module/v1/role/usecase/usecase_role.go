@@ -43,3 +43,12 @@ func (ru *roleUseCaseImpl) FindAllRoles(limit int64, page int64) ([]model.Role, 
 
 	return findAllRoleRepo, nil
 }
+
+func (ru *roleUseCaseImpl) CreateNewRole(payload *model.CreateRole) error {
+	errorHandlerSaveRepo := ru.roleRepository.Save(payload)
+	if !utils.GlobalErrorDatabaseException(errorHandlerSaveRepo) {
+		return errorHandlerSaveRepo
+	}
+
+	return nil
+}
