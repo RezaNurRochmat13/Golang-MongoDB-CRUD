@@ -1,6 +1,6 @@
 package repository
 
-import "svc-users-go/module/v1/model"
+import "svc-users-go/module/v1/user/model"
 
 type Repository interface {
 	FindAll(name string, limit int64, offset int64) ([]model.Users, error)

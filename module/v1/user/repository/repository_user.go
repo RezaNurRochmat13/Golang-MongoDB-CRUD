@@ -2,7 +2,7 @@ package repository
 
 import (
 	"context"
-	"svc-users-go/module/v1/model"
+	"svc-users-go/module/v1/user/model"
 	"svc-users-go/utils"
 
 	"go.mongodb.org/mongo-driver/bson"

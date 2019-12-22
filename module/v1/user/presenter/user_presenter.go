@@ -3,8 +3,8 @@ package presenter
 import (
 	"net/http"
 	"strconv"
-	"svc-users-go/module/v1/model"
-	"svc-users-go/module/v1/usecase"
+	"svc-users-go/module/v1/user/model"
+	"svc-users-go/module/v1/user/usecase"
 	"svc-users-go/utils"
 
 	"github.com/labstack/echo"

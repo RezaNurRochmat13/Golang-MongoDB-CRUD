@@ -6,11 +6,16 @@ import (
 	"net/http"
 	"svc-users-go/config"
 
+	UserHandlerPackage "svc-users-go/module/v1/user/presenter"
+	UserRepoPackage "svc-users-go/module/v1/user/repository"
+	UserUseCasePackage "svc-users-go/module/v1/user/usecase"
+
+	RoleHandlerPackage "svc-users-go/module/v1/role/presenter"
+	RoleRepoPackage "svc-users-go/module/v1/role/repository"
+	RoleUseCasePackage "svc-users-go/module/v1/role/usecase"
+
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
-	UserHandlerPackage "svc-users-go/module/v1/presenter"
-	UserRepoPackage "svc-users-go/module/v1/repository"
-	UserUseCasePackage "svc-users-go/module/v1/usecase"
 )
 
 func main() {
@@ -28,9 +33,15 @@ func main() {
 		AllowMethods: []string{http.MethodGet, http.MethodPut, http.MethodPost, http.MethodDelete},
 	}))
 
+	// User modules
 	userRepo := UserRepoPackage.NewUserRepository(mongoConnection)
 	userUseCase := UserUseCasePackage.NewUserUseCase(userRepo)
 	UserHandlerPackage.NewUserHandler(echoRouter, userUseCase)
+
+	// Role modules
+	roleRepo := RoleRepoPackage.NewRoleRepository(mongoConnection)
+	roleUseCase := RoleUseCasePackage.NewRoleUseCase(roleRepo)
+	RoleHandlerPackage.NewRoleHandler(echoRouter, roleUseCase)
 
 	//Configuration of logger
 	echoRouter.Use(middleware.Logger())

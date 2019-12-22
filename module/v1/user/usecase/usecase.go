@@ -1,6 +1,6 @@
 package usecase
 
-import "svc-users-go/module/v1/model"
+import "svc-users-go/module/v1/user/model"
 
 type UseCase interface {
 	FindAllUsers(name string, limit int64, page int64) ([]model.Users, error)

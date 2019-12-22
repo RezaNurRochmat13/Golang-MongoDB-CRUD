@@ -1,9 +1,8 @@
 package usecase
 
 import (
-	"svc-users-go/module/v1/repository"
-
-	"svc-users-go/module/v1/model"
+	"svc-users-go/module/v1/user/model"
+	"svc-users-go/module/v1/user/repository"
 
 	"svc-users-go/utils"
 )
