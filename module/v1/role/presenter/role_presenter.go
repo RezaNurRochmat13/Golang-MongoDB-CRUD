@@ -24,6 +24,8 @@ func NewRoleHandler(e *echo.Echo, roleUseCase usecase.UseCase) {
 	groupingPath.GET("/roles", injectionHandler.GetAllRoles)
 	groupingPath.POST("/role", injectionHandler.CreateNewRoles)
 	groupingPath.GET("/role/:id", injectionHandler.GetDetailRoles)
+	groupingPath.PUT("/role/:id", injectionHandler.UpdateRoles)
+	groupingPath.DELETE("/role/:id", injectionHandler.DeleteRoleHandler)
 
 }
 
@@ -115,4 +117,54 @@ func (rp *RoleHandler) GetDetailRoles(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, echo.Map{
 		"data": findRoleByIdUseCase,
 	})
+}
+
+func (rp *RoleHandler) UpdateRoles(ctx echo.Context) error {
+	id := ctx.Param("id")
+	rolePayload := new(model.UpdateRole)
+
+	errorHandlerBindJSON := ctx.Bind(rolePayload)
+	if !utils.GlobalErrorException(errorHandlerBindJSON) {
+		log.Printf("Error an occured %s", errorHandlerBindJSON.Error())
+		return ctx.JSON(http.StatusBadRequest,
+			echo.Map{"message": "Error when bind payload. Check logs more info"})
+	}
+
+	// Check param is exist
+	if id == "" {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{"message": "Parameter id is required"})
+	}
+
+	// Update roles
+	errorHandlerUpdateUseCase := rp.RoleUseCase.UpdateRole(id, rolePayload)
+	if !utils.GlobalErrorException(errorHandlerUpdateUseCase) {
+		log.Printf("Error an occured %s", errorHandlerUpdateUseCase.Error())
+		return ctx.JSON(http.StatusBadRequest,
+			echo.Map{"message": "Error when bind payload. Check logs more info"})
+	}
+
+	return ctx.JSON(http.StatusOK,
+		echo.Map{
+			"message":      "Role updated successfully",
+			"upated_roles": rolePayload})
+}
+
+func (rp *RoleHandler) DeleteRoleHandler(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	// Check param is exist
+	if id == "" {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{"message": "Parameter id is required"})
+	}
+
+	// Delete role usecase
+	errorHandlerDeleteRoleUseCase := rp.RoleUseCase.DeleteRole(id)
+	if !utils.GlobalErrorException(errorHandlerDeleteRoleUseCase) {
+		log.Printf("Error an occured %s", errorHandlerDeleteRoleUseCase.Error())
+		return ctx.JSON(http.StatusBadRequest,
+			echo.Map{"message": "Error when bind payload. Check logs more info"})
+	}
+
+	return ctx.JSON(http.StatusOK, echo.Map{"message": "Role deleted succesfully"})
+
 }

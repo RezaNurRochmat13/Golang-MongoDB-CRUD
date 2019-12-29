@@ -62,3 +62,37 @@ func (ru *roleUseCaseImpl) FindRoleById(id string) (model.Role, error) {
 
 	return findRoleById, nil
 }
+
+func (ru *roleUseCaseImpl) UpdateRole(id string, payload *model.UpdateRole) error {
+	// Check role by id exist or not
+	_, errorHandlerRepo := ru.roleRepository.FindById(id)
+
+	if !utils.GlobalErrorException(errorHandlerRepo) {
+		return errorHandlerRepo
+	}
+
+	// Updating role user
+	errorHandlerUpdateRole := ru.roleRepository.Update(id, payload)
+	if !utils.GlobalErrorDatabaseException(errorHandlerUpdateRole) {
+		return errorHandlerUpdateRole
+	}
+
+	return nil
+}
+
+func (ru *roleUseCaseImpl) DeleteRole(id string) error {
+	// Check role by id exist or not
+	_, errorHandlerRepo := ru.roleRepository.FindById(id)
+
+	if !utils.GlobalErrorException(errorHandlerRepo) {
+		return errorHandlerRepo
+	}
+
+	// Deleting role user
+	errorHandlerDeleteRoleRepo := ru.roleRepository.Delete(id)
+	if !utils.GlobalErrorException(errorHandlerDeleteRoleRepo) {
+		return errorHandlerDeleteRoleRepo
+	}
+
+	return nil
+}

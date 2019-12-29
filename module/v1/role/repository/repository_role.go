@@ -92,3 +92,36 @@ func (ru *roleRepositoryImpl) FindById(id string) (model.Role, error) {
 
 	return role, nil
 }
+
+func (rr *roleRepositoryImpl) Update(id string, payload *model.UpdateRole) error {
+	objectID, _ := primitive.ObjectIDFromHex(id)
+	filter := bson.M{
+		"_id": objectID,
+	}
+	updatedField := bson.M{
+		"$set": bson.M{
+			"role": payload.RoleName,
+		},
+	}
+
+	_, errorHandlerUpdate := rr.Connection.Collection("role").UpdateOne(cntx, filter, updatedField)
+	if !utils.GlobalErrorDatabaseException(errorHandlerUpdate) {
+		return errorHandlerUpdate
+	}
+
+	return nil
+}
+
+func (rr *roleRepositoryImpl) Delete(id string) error {
+	objectID, _ := primitive.ObjectIDFromHex(id)
+	filter := bson.M{
+		"_id": objectID,
+	}
+
+	_, errorHandlerDeleteRole := rr.Connection.Collection("role").DeleteOne(cntx, filter)
+	if !utils.GlobalErrorDatabaseException(errorHandlerDeleteRole) {
+		return errorHandlerDeleteRole
+	}
+
+	return nil
+}
