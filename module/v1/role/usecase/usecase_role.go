@@ -52,3 +52,13 @@ func (ru *roleUseCaseImpl) CreateNewRole(payload *model.CreateRole) error {
 
 	return nil
 }
+
+func (ru *roleUseCaseImpl) FindRoleById(id string) (model.Role, error) {
+	findRoleById, errorHandlerRepo := ru.roleRepository.FindById(id)
+
+	if !utils.GlobalErrorException(errorHandlerRepo) {
+		return model.Role{}, errorHandlerRepo
+	}
+
+	return findRoleById, nil
+}

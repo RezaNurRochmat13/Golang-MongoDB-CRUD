@@ -6,6 +6,7 @@ import (
 	"svc-users-go/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -72,4 +73,22 @@ func (ru *roleRepositoryImpl) Save(payload *model.CreateRole) error {
 	}
 
 	return nil
+}
+
+func (ru *roleRepositoryImpl) FindById(id string) (model.Role, error) {
+	var (
+		role      model.Role
+		roleId, _ = primitive.ObjectIDFromHex(id)
+		filter    = bson.M{"_id": roleId}
+	)
+
+	errorHandlerGetRoleById := ru.Connection.Collection("role").
+		FindOne(cntx, filter).
+		Decode(&role)
+
+	if !utils.GlobalErrorDatabaseException(errorHandlerGetRoleById) {
+		return model.Role{}, errorHandlerGetRoleById
+	}
+
+	return role, nil
 }

@@ -1,6 +1,7 @@
 package presenter
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"svc-users-go/module/v1/role/model"
@@ -22,6 +23,7 @@ func NewRoleHandler(e *echo.Echo, roleUseCase usecase.UseCase) {
 	groupingPath := e.Group("/api/v1")
 	groupingPath.GET("/roles", injectionHandler.GetAllRoles)
 	groupingPath.POST("/role", injectionHandler.CreateNewRoles)
+	groupingPath.GET("/role/:id", injectionHandler.GetDetailRoles)
 
 }
 
@@ -91,5 +93,26 @@ func (rp *RoleHandler) CreateNewRoles(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, echo.Map{
 		"message":      "Role created successfully",
 		"created_role": rolePayload,
+	})
+}
+
+func (rp *RoleHandler) GetDetailRoles(ctx echo.Context) error {
+	id := ctx.Param("id")
+
+	// Check param is exist
+	if id == "" {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{"message": "Parameter id is required"})
+	}
+
+	// Find role by id usecase
+	findRoleByIdUseCase, errorHandlerUseCase := rp.RoleUseCase.FindRoleById(id)
+	if !utils.GlobalErrorException(errorHandlerUseCase) {
+		log.Printf("Error an occured %s", errorHandlerUseCase.Error())
+		return ctx.JSON(http.StatusBadRequest, echo.Map{
+			"message": "Error when get usecase. Check logs for more info"})
+	}
+
+	return ctx.JSON(http.StatusOK, echo.Map{
+		"data": findRoleByIdUseCase,
 	})
 }

@@ -10,3 +10,7 @@ type Role struct {
 type CreateRole struct {
 	RoleName string `json:"role_name" bson:"role"`
 }
+
+type UpdateRole struct {
+	RoleName string `json:"role_name" bson:"role"`
+}
