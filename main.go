@@ -14,12 +14,16 @@ import (
 	RoleRepoPackage "svc-users-go/module/v1/role/repository"
 	RoleUseCasePackage "svc-users-go/module/v1/role/usecase"
 
+	AccessControlHandlerPackage "svc-users-go/module/v1/access-control/presenter"
+	AccessControlRepoPackage "svc-users-go/module/v1/access-control/repository"
+	AccessControlUseCasePackage "svc-users-go/module/v1/access-control/usecase"
+
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
 
 func main() {
-	fmt.Println("Hello world")
+	fmt.Println("Server is running :)")
 
 	mongoConnection, errorMongoConn := config.MongoConnection()
 
@@ -42,6 +46,10 @@ func main() {
 	roleRepo := RoleRepoPackage.NewRoleRepository(mongoConnection)
 	roleUseCase := RoleUseCasePackage.NewRoleUseCase(roleRepo)
 	RoleHandlerPackage.NewRoleHandler(echoRouter, roleUseCase)
+
+	accessControlRepo := AccessControlRepoPackage.NewAccessControlRepository(mongoConnection)
+	accessControlUsecase := AccessControlUseCasePackage.NewAccessControlUseCase(accessControlRepo)
+	AccessControlHandlerPackage.NewAccessControlHandler(echoRouter, accessControlUsecase)
 
 	//Configuration of logger
 	echoRouter.Use(middleware.Logger())
