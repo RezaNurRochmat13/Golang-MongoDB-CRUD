@@ -40,3 +40,12 @@ func (au *accessControlUseCaseImpl) CountAllUser() (int64, error) {
 
 	return countAllUserRepo, nil
 }
+
+func (au *accessControlUseCaseImpl) FindAccessControlById(id string) (model.DetailAccessControl, error) {
+	findAccessControlById, errorHandlerRepo := au.accessControlRepository.FindById(id)
+	if !utils.GlobalErrorException(errorHandlerRepo) {
+		return model.DetailAccessControl{}, errorHandlerRepo
+	}
+
+	return findAccessControlById, errorHandlerRepo
+}

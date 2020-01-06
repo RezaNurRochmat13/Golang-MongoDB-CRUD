@@ -6,6 +6,7 @@ import (
 	"svc-users-go/utils"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -56,4 +57,20 @@ func (ar *accessControlRepositoryImpl) Count() (int64, error) {
 	}
 
 	return countAllAccessControl, nil
+}
+
+func (ar *accessControlRepositoryImpl) FindById(id string) (model.DetailAccessControl, error) {
+	var (
+		objectID, _         = primitive.ObjectIDFromHex(id)
+		detailAccessControl model.DetailAccessControl
+		filter              = bson.M{"_id": objectID}
+	)
+
+	errorHandlerQuery := ar.Connection.Collection("access_control").
+		FindOne(cntx, filter).Decode(&detailAccessControl)
+	if !utils.GlobalErrorDatabaseException(errorHandlerQuery) {
+		return model.DetailAccessControl{}, errorHandlerQuery
+	}
+
+	return detailAccessControl, nil
 }
