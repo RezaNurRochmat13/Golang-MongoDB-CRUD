@@ -49,3 +49,12 @@ func (au *accessControlUseCaseImpl) FindAccessControlById(id string) (model.Deta
 
 	return findAccessControlById, errorHandlerRepo
 }
+
+func (au *accessControlUseCaseImpl) CreateNewAccessControl(payload *model.CreateAccessControl) (*model.CreateAccessControl, error) {
+	_, errorHandlerRepo := au.accessControlRepository.Save(payload)
+	if !utils.GlobalErrorException(errorHandlerRepo) {
+		return nil, errorHandlerRepo
+	}
+
+	return payload, nil
+}

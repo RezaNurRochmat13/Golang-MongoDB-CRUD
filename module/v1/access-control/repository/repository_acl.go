@@ -74,3 +74,15 @@ func (ar *accessControlRepositoryImpl) FindById(id string) (model.DetailAccessCo
 
 	return detailAccessControl, nil
 }
+
+func (ar *accessControlRepositoryImpl) Save(payload *model.CreateAccessControl) (*model.CreateAccessControl, error) {
+	_, errorHandlerQueryInsert := ar.Connection.Collection("access_control").
+		InsertOne(cntx, payload)
+
+	if !utils.GlobalErrorDatabaseException(errorHandlerQueryInsert) {
+		return nil, errorHandlerQueryInsert
+	}
+
+	return payload, nil
+
+}

@@ -3,6 +3,7 @@ package presenter
 import (
 	"net/http"
 	"strconv"
+	"svc-users-go/module/v1/access-control/model"
 	"svc-users-go/module/v1/access-control/usecase"
 	"svc-users-go/utils"
 
@@ -20,6 +21,7 @@ func NewAccessControlHandler(e *echo.Echo, accessControlUseCase usecase.UseCase)
 	groupingPath := e.Group("/api/v1")
 	groupingPath.GET("/access-controls", injectionHandler.GetAllAccessControl)
 	groupingPath.GET("/access-control/:id", injectionHandler.GetDetailAccessControl)
+	groupingPath.POST("/access-control", injectionHandler.CreateNewAccessControl)
 
 }
 
@@ -72,4 +74,29 @@ func (ap *AccessControlHandler) GetDetailAccessControl(ctx echo.Context) error {
 	return ctx.JSON(http.StatusOK, echo.Map{
 		"data": findAccessControlById,
 	})
+}
+
+func (ar *AccessControlHandler) CreateNewAccessControl(ctx echo.Context) error {
+	accessControlPayload := new(model.CreateAccessControl)
+
+	errorHandlerBindPayload := ctx.Bind(accessControlPayload)
+	if !utils.GlobalErrorException(errorHandlerBindPayload) {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{
+			"message": "Error an occured. Check your logs",
+		})
+	}
+
+	// Save access control
+	_, errorHandlerUsecase := ar.AccessControlUseCase.CreateNewAccessControl(accessControlPayload)
+	if !utils.GlobalErrorException(errorHandlerUsecase) {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{
+			"message": "Error an occured. Check your logs",
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, echo.Map{
+		"message":                "Access control created successfully",
+		"created_access_control": accessControlPayload,
+	})
+
 }

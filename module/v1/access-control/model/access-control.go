@@ -12,3 +12,8 @@ type DetailAccessControl struct {
 	AccessControlName        string             `json:"access_control_name" bson:"access_control_name"`
 	AccessControlDescription string             `json:"access_control_description" bson:"access_control_description"`
 }
+
+type CreateAccessControl struct {
+	AccessControlName        string `json:"access_control_name" bson:"access_control_name"`
+	AccessControlDescription string `json:"access_control_description" bson:"access_control_description"`
+}
